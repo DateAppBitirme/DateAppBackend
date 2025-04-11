@@ -2,6 +2,7 @@
 using DateApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 
 namespace DateApp.Controllers
@@ -28,21 +29,31 @@ namespace DateApp.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var user = new AppUser
+                var appUser = new AppUser
                 {
                     UserName = registerDto.Username,
                     Email = registerDto.Email,
                 };
-                var result = await _userManager.CreateAsync(user, registerDto.Password);
 
-                if (result.Succeeded)
+                var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);
+                if (createdUser.Succeeded)
                 {
-                    return Ok(
-                            new NewUserDto
-                            {
-                                Username = user.UserName,
-                                Email = user.Email,
-                            }); 
+                    var roleResult = await _userManager.AddToRoleAsync(appUser, "user");
+                    if (roleResult.Succeeded)
+                    {
+                        return Ok(
+                            new NewUserDto { Username = appUser.UserName, Email = appUser.Email }
+
+                            );
+                    }
+                    else
+                    {
+                        return BadRequest(new 
+                        { message = "Rol atanamadı.", 
+                          errors = roleResult.Errors.Select(e => e.Description) 
+                        });
+
+                    }
                 }
                 else
                 {
@@ -50,7 +61,7 @@ namespace DateApp.Controllers
                     return BadRequest(new
                     {
                         message = "Kullanıcı oluşturulamadı.",
-                        errors = result.Errors.Select(e => e.Description)
+                        errors = createdUser.Errors.Select(e => e.Description)
                     });
                 }
             }
