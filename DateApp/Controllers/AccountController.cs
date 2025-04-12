@@ -1,4 +1,5 @@
 ﻿using DateApp.Dtos.AccountDto;
+using DateApp.Interfaces;
 using DateApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ namespace DateApp.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly ITokenService _tokenService;
 
-        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenService tokenService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _tokenService = tokenService;
         }
 
         [HttpPost("register")]
@@ -42,7 +45,11 @@ namespace DateApp.Controllers
                     if (roleResult.Succeeded)
                     {
                         return Ok(
-                            new NewUserDto { Username = appUser.UserName, Email = appUser.Email }
+                            new NewUserDto { 
+                                Username = appUser.UserName, 
+                                Email = appUser.Email,
+                                Token = await _tokenService.CreateToken(appUser)
+                            }
 
                             );
                     }
@@ -80,12 +87,12 @@ namespace DateApp.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-                var user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == loginDto.Username);
-                if (user == null)
+                var appUser = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == loginDto.Username);
+                if (appUser == null)
                 {
                     return NotFound(new { message = "Kullanıcı bulunamadı." });
                 }
-                var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+                var result = await _signInManager.CheckPasswordSignInAsync(appUser, loginDto.Password, false);
                 if (!result.Succeeded)
                 {
                     return Unauthorized("Kullanıcı adı veya parola hatalı!");
@@ -93,8 +100,9 @@ namespace DateApp.Controllers
 
                 return Ok(new NewUserDto
                 {
-                    Username = user.UserName,
-                    Email = user.Email,
+                    Username = appUser.UserName,
+                    Email = appUser.Email,
+                    Token = await _tokenService.CreateToken(appUser)
                 });
             }
             catch (Exception ex)

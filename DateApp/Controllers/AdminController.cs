@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DateApp.Controllers
 {
-    //[Authorize(Policy = "AdminPolicy")]
+    [Authorize(Policy = "AdminPolicy")]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
