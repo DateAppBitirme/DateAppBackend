@@ -5,7 +5,11 @@ using DateApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Text;
+using System.Web;
 
 namespace DateApp.Controllers
 {
@@ -169,6 +173,95 @@ namespace DateApp.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto, [FromServices] IEmailService emailService)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var appUser = await _userManager.FindByEmailAsync(forgotPasswordDto.Email!);
+                if (appUser == null)
+                {
+                    return BadRequest(new { message = "Kullanıcı bulunamadı." }); // güvenlik için bu bilgi kaldırılabilir ve olumlu dönüş yazdırılabilir
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(appUser);
+
+                var urlEncodedToken = WebUtility.UrlEncode(token);
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var resetLink = $"{baseUrl}/reset-password.html?userId={appUser.Id}&token={urlEncodedToken}";
+
+                var emailBody = $@"
+                    <html>
+                    <body>
+                        <p>Merhaba,</p>
+                        <p>Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:</p>
+                        <p><a href='{resetLink}'>Şifre Sıfırla</a></p>
+                        <p>Eğer siz şifre sıfırlama talebinde bulunmadıysanız, bu e-postayı dikkate almayınız.</p>
+                        <p>Saygılarımızla.</p>
+                    </body>
+                    </html>
+                ";
+
+                if (string.IsNullOrEmpty(appUser.Email))
+                {
+                    return BadRequest(new { message = "Kullanıcının e-posta adresi bulunamadı." });
+                }
+
+                await emailService.SendEmailAsync(appUser.Email, "Şifre Sıfırlama", emailBody);
+
+                return Ok(new { message = "E-posta gönderildi!", resetLink });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                if (resetPasswordDto.Password != resetPasswordDto.ConfirmPassword)
+                {
+                    return BadRequest(new { message = "Parolalar uyuşmuyor." });
+                }
+
+                var user = await _userManager.FindByIdAsync(resetPasswordDto.UserId);
+                if (user == null)
+                {
+                    return BadRequest(new { message = "Geçersiz istek." });
+                }
+
+                var result = await _userManager.ResetPasswordAsync(
+                    user, resetPasswordDto.Token!, resetPasswordDto.Password!);
+
+                if (result.Succeeded)
+                {
+                    return Ok(new { message = "Parola başarıyla sıfırlandı." });
+                }
+
+                // Hataları detaylı döndürme
+                var errors = result.Errors.Select(e => e.Description);
+                return BadRequest(new { message = "Şifre sıfırlama başarısız.", errors });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Bir hata oluştu: {ex.Message}" });
+            }
+
         }
 
     }
