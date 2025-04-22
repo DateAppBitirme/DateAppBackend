@@ -35,29 +35,34 @@ namespace DateApp.Controllers
                     return BadRequest(ModelState);
                 }
 
-                if (registerDto.Gender is null || registerDto.DateOfBirth is null)
-                    return BadRequest("Gender and date of birth are required!");
+                if (!string.IsNullOrEmpty(registerDto.PhoneNumber))
+                {
+                    var phoneExists = await _userManager.Users
+                                           .AnyAsync(u => u.PhoneNumber == registerDto.PhoneNumber);
+                    if (phoneExists)
+                    {
+                        ModelState.AddModelError(nameof(registerDto.PhoneNumber), "This phone number is already taken.");
+                        return BadRequest(ModelState);
+                    }
+                }
 
                 var appUser = new AppUser
                 {
                     UserName = registerDto.Username,
                     Email = registerDto.Email,
                     PhoneNumber = registerDto.PhoneNumber,
-                    Gender = registerDto!.Gender.Value,
-                    DateOfBirth = registerDto!.DateOfBirth.Value,
+                    Gender = registerDto.Gender!.Value,
+                    DateOfBirth = registerDto.DateOfBirth!.Value,
                 };
 
-                if (registerDto.Password is null)
-                    return BadRequest("Password is required!");
-
-                var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);
+                var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password!);
                 if (!createdUser.Succeeded)
                 {
-                    return BadRequest(new
+                    foreach (var error in createdUser.Errors)
                     {
-                        message = "User could not be created.",
-                        errors = createdUser.Errors.Select(e => e.Description)
-                    });
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return BadRequest(ModelState);
                 }
 
                 var roleResult = await _userManager.AddToRoleAsync(appUser, "user");
@@ -79,15 +84,8 @@ namespace DateApp.Controllers
                     Request.Scheme
                 );
 
-                if (appUser.Email is null)
-                    return BadRequest("Email could not be null!");
-
                 var emailBody = $"<p>Lütfen e-posta adresinizi doğrulamak için aşağıdaki bağlantıya tıklayın:</p><a href='{confirmationLink}'>E-posta Doğrula</a>";
-                await emailService.SendEmailAsync(appUser.Email, "E-posta Doğrulama", emailBody);
-
-                if (appUser.UserName is null)
-                    return BadRequest("Username could not be null!");
-
+                await emailService.SendEmailAsync(appUser.Email!, "E-posta Doğrulama", emailBody);
 
                 return Ok(new
                 {

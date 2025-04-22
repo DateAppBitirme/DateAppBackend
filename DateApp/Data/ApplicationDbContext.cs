@@ -23,6 +23,10 @@ namespace DateApp.Data
             };
             builder.Entity<IdentityRole>().HasData(roles);
 
+            builder.Entity<AppUser>(entity => {
+                entity.HasIndex(u => u.PhoneNumber).IsUnique();
+            });
+
         }
     }
 }

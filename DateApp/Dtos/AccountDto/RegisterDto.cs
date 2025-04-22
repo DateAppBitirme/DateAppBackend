@@ -10,16 +10,15 @@ namespace DateApp.Dtos.AccountDto
         public string? Username { get; init; }
 
         [Required(ErrorMessage = "Email is required!")]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
         public string? Email { get; init; }
 
         [Required(ErrorMessage = "Password is required!")]
         public string? Password { get; init; }
 
         [Required]
-        [Phone]
-        [RegularExpression(@"^\+?[1-9]\d{1,14}$", 
-            ErrorMessage = "Please enter a valid phone number. Example: +905551234567")]
+        [RegularExpression(@"^\+905\d{9}$", 
+            ErrorMessage = "Please enter a valid phone number. Example: +905xxxxxxxxx")]
         public string? PhoneNumber { get; init; }
 
         [Required(ErrorMessage = "Gender is required!")]
