@@ -2,12 +2,12 @@
 
 namespace DateApp.Dtos.AccountDto
 {
-    public class LoginDto
+    public record LoginDto
     {
-        [Required]
-        public string Username { get; set; }
+        [Required(ErrorMessage = "Username is required!")]
+        public string? Username { get; init; }
 
-        [Required]
-        public string Password { get; set; }
+        [Required(ErrorMessage = "Password is required!")]
+        public string? Password { get; init; }
     }
 }

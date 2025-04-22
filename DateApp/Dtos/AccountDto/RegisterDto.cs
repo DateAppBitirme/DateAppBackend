@@ -1,51 +1,50 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using DateApp.Core.Enums;
 using static DateApp.Models.AppUser;
 
 namespace DateApp.Dtos.AccountDto
 {
     public class RegisterDto
     {
-        [Required]
-        public string Username { get; set; }
+        [Required(ErrorMessage = "Username is required!")]
+        public string? Username { get; init; }
 
-        [Required]
+        [Required(ErrorMessage = "Email is required!")]
         [EmailAddress]
-        public string Email { get; set; }
+        public string? Email { get; init; }
 
-        [Required]
-        public string Password { get; set; }
+        [Required(ErrorMessage = "Password is required!")]
+        public string? Password { get; init; }
 
         [Required]
         [Phone]
         [RegularExpression(@"^\+?[1-9]\d{1,14}$", 
-            ErrorMessage = "Telefon numaranız geçerli bir uluslararası formatta olmalıdır.")]
-        public string PhoneNumber { get; set; }
+            ErrorMessage = "Please enter a valid phone number. Example: +905551234567")]
+        public string? PhoneNumber { get; init; }
 
-        [Required]
-        public gender Gender { get; set; }
+        [Required(ErrorMessage = "Gender is required!")]
+        public Gender? Gender { get; init; }
 
-        [Required]
+        [Required(ErrorMessage = "Date of birth is required!")]
         [DataType(DataType.Date)]
         [CustomValidation(typeof(DateValidation), "ValidateAge")]
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; init; }
 
-        [MinLength(1, ErrorMessage = "En az bir ilgi alanı eklenmelidir.")]
-        public List<string> Interests { get; set; } = new List<string>();
     }
 
     public static class DateValidation
     {
-        public static ValidationResult ValidateAge(DateTime? dateOfBirth, ValidationContext context)
+        public static ValidationResult? ValidateAge(DateTime? dateOfBirth, ValidationContext context)
         {
             if (!dateOfBirth.HasValue)
-                return new ValidationResult("Doğum tarihi zorunludur.");
+                return new ValidationResult("Date of birth is required!");
 
             var age = DateTime.Now.Year - dateOfBirth.Value.Year;
             if (dateOfBirth.Value > DateTime.Now.AddYears(-age)) age--;
 
             return age >= 18 
                 ? ValidationResult.Success 
-                : new ValidationResult("En az 18 yaşında olmanız gerekmektedir.");
+                : new ValidationResult("You must be at least 18 years old to register!");
         }
     }
 }

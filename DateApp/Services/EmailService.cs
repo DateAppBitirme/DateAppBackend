@@ -19,14 +19,14 @@ namespace DateApp.Services
 
             var smtpClient = new SmtpClient(smtpSettings["Host"])
             {
-                Port = int.Parse(smtpSettings["Port"]),
+                Port = int.Parse(smtpSettings["Port"]!),
                 Credentials = new NetworkCredential(smtpSettings["Username"], smtpSettings["Password"]),
-                EnableSsl = bool.Parse(smtpSettings["EnableSsl"])
+                EnableSsl = bool.Parse(smtpSettings["EnableSsl"]!)
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(smtpSettings["Username"]),
+                From = new MailAddress(smtpSettings["Username"]!),
                 Subject = subject,
                 Body = body,
                 IsBodyHtml = true
