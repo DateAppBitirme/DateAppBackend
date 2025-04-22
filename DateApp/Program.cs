@@ -19,14 +19,14 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//Swagger için Authorization ayarlarý
+//Swagger iï¿½in Authorization ayarlarï¿½
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "DateApp API", Version = "v1" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Lütfen geçerli token giriniz.",
+        Description = "Lï¿½tfen geï¿½erli token giriniz.",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
@@ -58,12 +58,20 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 10;
+
+    options.User.RequireUniqueEmail = true;
+    
     options.Tokens.EmailConfirmationTokenProvider = "Default";
 })  
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+
 var jwtSigningKey = builder.Configuration["JWT:SigningKey"];
+
+if (string.IsNullOrWhiteSpace(jwtSigningKey))
+    throw new InvalidOperationException("JWT signing key must not be null or empty.");
+    
 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey));
 builder.Services.AddSingleton(securityKey);
 
@@ -122,6 +130,8 @@ builder.Services.AddAuthorization(options =>
 
 
 var app = builder.Build();
+
+app.UseStaticFiles();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
