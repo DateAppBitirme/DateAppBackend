@@ -77,6 +77,9 @@ namespace DateApp.Controllers
 
                 var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
 
+                // var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                // var resetLink = $"{baseUrl}/confirm-email.html?userId={appUser.Id}&token={emailConfirmationToken}";
+
                 var confirmationLink = Url.Action(
                     "ConfirmEmail",
                     "Account",
@@ -176,7 +179,7 @@ namespace DateApp.Controllers
                 {
                     return BadRequest(new { message = "E-posta doğrulaması başarısız." });
                 }
-                return Ok(new { message = "E-posta adresiniz başarıyla doğrulandı!" });
+                return Redirect("/confirm-email.html");
             }
             catch (Exception ex)
             {
