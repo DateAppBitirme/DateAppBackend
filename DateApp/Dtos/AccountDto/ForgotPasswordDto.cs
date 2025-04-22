@@ -10,6 +10,6 @@ namespace DateApp.Dtos.AccountDto
     {
         [Required]
         [EmailAddress(ErrorMessage = "Email is required!")]
-        public string? Email { get; set; }
+        public string? Email { get; init; }
     }
 }
