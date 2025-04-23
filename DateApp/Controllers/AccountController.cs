@@ -1,8 +1,10 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using DateApp.Dtos.AccountDto;
 using DateApp.Interfaces;
 using DateApp.Models;
 using DateApp.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
@@ -76,9 +78,6 @@ namespace DateApp.Controllers
                 }
 
                 var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-
-                // var baseUrl = $"{Request.Scheme}://{Request.Host}";
-                // var resetLink = $"{baseUrl}/confirm-email.html?userId={appUser.Id}&token={emailConfirmationToken}";
 
                 var confirmationLink = Url.Action(
                     "ConfirmEmail",
@@ -280,6 +279,143 @@ namespace DateApp.Controllers
                 return BadRequest(new { message = $"Something is happened: {ex.Message}" });
             }
 
+        }
+
+        [HttpPut("update-profile")]
+        [Authorize] // Only authenticated users can access this endpoint
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto updateProfileDto, [FromServices] IEmailService emailService)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            //1. Find current user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null)
+            {
+                return Unauthorized("User ID not found.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+            {
+                return NotFound("User not found.");
+            }
+
+            //2.Pass non-null values ​​in DTO to user
+            bool changesMade = false;
+
+            if (updateProfileDto.Email is not null && updateProfileDto.Email != user.Email)
+            {
+                //check if email already exists
+                var existingUser = await _userManager.FindByEmailAsync(updateProfileDto.Email);
+                if (existingUser is not null && existingUser.Id != user.Id)
+                {
+                    ModelState.AddModelError(nameof(updateProfileDto.Email), "Email already exists.");
+                    return BadRequest(ModelState);
+                }
+
+                //update email
+                var setEmailResult = await _userManager.SetEmailAsync(user, updateProfileDto.Email);
+                if (!setEmailResult.Succeeded)
+                {
+                    foreach (var error in setEmailResult.Errors)
+                    {
+                        ModelState.AddModelError(nameof(updateProfileDto.Email), error.Description);
+                    }
+                    return BadRequest(ModelState);
+                }
+
+                var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                var confirmationLink = Url.Action(
+                    "ConfirmEmail",
+                    "Account",
+                    new { userId = user.Id, token = emailConfirmationToken },
+                    Request.Scheme
+                );
+
+                var emailBody = $"<p>Lütfen e-posta adresinizi doğrulamak için aşağıdaki bağlantıya tıklayın:</p><a href='{confirmationLink}'>E-posta Doğrula</a>";
+                await emailService.SendEmailAsync(user.Email!, "E-posta Doğrulama", emailBody);
+
+                user.EmailConfirmed = false;
+                changesMade = true;
+            }
+
+            if (updateProfileDto.PhoneNumber is not null && updateProfileDto.PhoneNumber != user.PhoneNumber)
+            {
+                var existingPhoneUser = await _userManager.Users
+                    .FirstOrDefaultAsync(u => u.PhoneNumber == updateProfileDto.PhoneNumber);
+
+                if (existingPhoneUser is not null && existingPhoneUser.Id != user.Id)
+                {
+                    ModelState.AddModelError(nameof(updateProfileDto.PhoneNumber), "This phone number is already taken.");
+                    return BadRequest(ModelState);
+                }
+                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, updateProfileDto.PhoneNumber);
+                if (!setPhoneResult.Succeeded)
+                {
+                    foreach (var error in setPhoneResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return BadRequest(ModelState);
+                }
+                changesMade = true;
+            }
+
+            if (updateProfileDto.Gender.HasValue && user.Gender != updateProfileDto.Gender.Value)
+            {
+                user.Gender = updateProfileDto.Gender.Value;
+                changesMade = true;
+            }
+
+            if (updateProfileDto.DateOfBirth.HasValue && user.DateOfBirth.Date != updateProfileDto.DateOfBirth.Value.Date)
+            {
+                user.DateOfBirth = updateProfileDto.DateOfBirth.Value;
+                changesMade = true;
+            }
+
+            if (updateProfileDto.Username != null && user.UserName != updateProfileDto.Username)
+            {
+                var existingUser = await _userManager.FindByNameAsync(updateProfileDto.Username);
+                if (existingUser is not null && existingUser.Id != user.Id)
+                {
+                    ModelState.AddModelError(nameof(updateProfileDto.Username), "This username is already taken.");
+                    return BadRequest(ModelState);
+                }
+
+                var setUsernameResult = await _userManager.SetUserNameAsync(user, updateProfileDto.Username);
+                if (!setUsernameResult.Succeeded)
+                {
+                    foreach (var error in setUsernameResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return BadRequest(ModelState);
+                }
+                changesMade = true;
+            }
+
+            if (!changesMade)
+            {
+                return NoContent();
+            }
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (updateResult.Succeeded)
+            {
+                return Ok("Profile updated successfully.");
+            }
+            else
+            {
+                foreach (var error in updateResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return BadRequest(ModelState);
+            }
         }
 
     }
