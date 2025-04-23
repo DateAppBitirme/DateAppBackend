@@ -146,16 +146,21 @@ namespace DateApp.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        [Authorize]
+        public IActionResult Logout()
         {
             try
             {
-                await _signInManager.SignOutAsync();
-                return Ok(new { message = "Çıkış yapıldı." });
+                //await _signInManager.SignOutAsync();
+                return Ok(new
+                {
+                    message = "Çıkış yapıldı. Lütfen istemci tarafında JWT token'ı temizleyin.",
+                    success = true
+                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(new { message = ex.Message });
+                return StatusCode(500, new { message = "Çıkış yapılırken bir hata oluştu. Lütfen daha sonra tekrar deneyin." });
             }
         }
 
@@ -289,7 +294,7 @@ namespace DateApp.Controllers
             {
                 return BadRequest(ModelState);
             }
-            
+
             //1. Find current user
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null)
