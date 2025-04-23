@@ -423,5 +423,50 @@ namespace DateApp.Controllers
             }
         }
 
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("User ID not found.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var changePasswordResult = await _userManager.ChangePasswordAsync(
+            user,
+            changePasswordDto.CurrentPassword!,
+            changePasswordDto.NewPassword!
+            );
+
+            if (changePasswordResult.Succeeded)
+                return Ok(new { message = "Password change was completed successfully." });
+            else
+            {
+                foreach (var error in changePasswordResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return BadRequest(ModelState);
+            }
+
+
+
+
+        }
+
+
     }
 }
