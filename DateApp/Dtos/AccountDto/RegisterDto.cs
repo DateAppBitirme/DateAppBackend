@@ -7,6 +7,7 @@ namespace DateApp.Dtos.AccountDto
     public class RegisterDto
     {
         [Required(ErrorMessage = "Username is required!")]
+        [StringLength(100, MinimumLength = 3)]
         public string? Username { get; init; }
 
         [Required(ErrorMessage = "Email is required!")]
@@ -17,7 +18,7 @@ namespace DateApp.Dtos.AccountDto
         public string? Password { get; init; }
 
         [Required]
-        [RegularExpression(@"^\+905\d{9}$", 
+        [RegularExpression(@"^\+905\d{9}$",
             ErrorMessage = "Please enter a valid phone number. Example: +905xxxxxxxxx")]
         public string? PhoneNumber { get; init; }
 
@@ -36,13 +37,13 @@ namespace DateApp.Dtos.AccountDto
         public static ValidationResult? ValidateAge(DateTime? dateOfBirth, ValidationContext context)
         {
             if (!dateOfBirth.HasValue)
-                return new ValidationResult("Date of birth is required!");
+                return ValidationResult.Success; // for update - profile
 
             var age = DateTime.Now.Year - dateOfBirth.Value.Year;
             if (dateOfBirth.Value > DateTime.Now.AddYears(-age)) age--;
 
-            return age >= 18 
-                ? ValidationResult.Success 
+            return age >= 18
+                ? ValidationResult.Success
                 : new ValidationResult("You must be at least 18 years old to register!");
         }
     }
