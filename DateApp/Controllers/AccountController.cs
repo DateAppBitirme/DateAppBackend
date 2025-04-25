@@ -136,7 +136,8 @@ namespace DateApp.Controllers
                 {
                     Username = appUser.UserName!,
                     Email = appUser.Email!,
-                    Token = await _tokenService.CreateToken(appUser)
+                    Token = await _tokenService.CreateToken(appUser),
+                    EmailConfirmed = appUser.EmailConfirmed
                 });
             }
             catch (Exception ex)
