@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15">
       <PrivateAssets>all</PrivateAssets>
@@ -23,6 +24,10 @@
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dtos\MessagesDto\" />
   </ItemGroup>
 
 </Project>

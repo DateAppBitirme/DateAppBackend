@@ -7,6 +7,9 @@ namespace DateApp.Data
 {
     public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
+
+        public DbSet<PrivateMessage> PrivateMessages { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
@@ -26,6 +29,18 @@ namespace DateApp.Data
             builder.Entity<AppUser>(entity => {
                 entity.HasIndex(u => u.PhoneNumber).IsUnique();
             });
+
+            builder.Entity<PrivateMessage>()
+                .HasOne(pm => pm.Sender)
+                .WithMany()
+                .HasForeignKey(pm => pm.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<PrivateMessage>()
+                .HasOne(pm => pm.Receiver)
+                .WithMany()
+                .HasForeignKey(pm => pm.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

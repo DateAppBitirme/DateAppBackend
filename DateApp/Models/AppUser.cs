@@ -9,6 +9,9 @@ namespace DateApp.Models
         public Gender Gender { get; set; }
 
         public DateTime DateOfBirth { get; set; }
-
+        
+        public bool IsOnline { get; set; }
+        
+        public DateTime LastSeen { get; set; }
     }
 }

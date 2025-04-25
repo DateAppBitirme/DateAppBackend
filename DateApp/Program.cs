@@ -1,4 +1,5 @@
 using DateApp.Data;
+using DateApp.Hubs;
 using DateApp.Interfaces;
 using DateApp.Models;
 using DateApp.Services;
@@ -13,13 +14,12 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//Swagger i�in Authorization ayarlar�
+
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "DateApp API", Version = "v1" });
@@ -66,6 +66,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddSignalR();
 
 var jwtSigningKey = builder.Configuration["JWT:SigningKey"];
 
@@ -99,6 +100,19 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = securityKey,
         RoleClaimType = "roles"
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -145,6 +159,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.MapControllers();
 
