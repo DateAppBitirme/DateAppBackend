@@ -277,6 +277,7 @@ namespace DateApp.Controllers
                     return Ok(new { message = "Password reset successfully." });
                 }
 
+                // Hataları detaylı döndürme
                 var errors = result.Errors.Select(e => e.Description);
                 return BadRequest(new { message = "Password reset failed!", errors });
             }

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SignalR Test Client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+</head>
+<body>
+    <h2>SignalR Test Client</h2>
+
+    <label>Access Token:</label><br />
+    <input type="text" id="token" size="80" /><br /><br />
+
+    <label>Receiver ID:</label><br />
+    <input type="text" id="receiverId" /><br /><br />
+
+    <label>Message:</label><br />
+    <input type="text" id="message" /><br /><br />
+
+    <button type="button" id="connectBtn">🔌 Bağlan</button>
+    <button type="button" id="sendBtn">📤 Mesaj Gönder</button>
+
+    <h3>📥 Gelen Mesajlar:</h3>
+    <ul id="messages"></ul>
+
+    <script>
+        let connection;
+
+        document.getElementById("connectBtn").addEventListener("click", async () => {
+            const token = document.getElementById('token').value;
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("https://localhost:7138/chatHub", {
+                    accessTokenFactory: () => token
+                })
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            connection.on("ReceiveMessage", msg => {
+                const ul = document.getElementById('messages');
+                const li = document.createElement('li');
+                li.textContent = `📩 ${msg.senderId}: ${msg.content} (${new Date(msg.sentAt).toLocaleTimeString()})`;
+                ul.appendChild(li);
+            });
+
+            try {
+                await connection.start();
+                console.log("✅ Bağlantı kuruldu.");
+                document.getElementById("connectBtn").disabled = true;
+
+            } catch (err) {
+                console.error("❌ Bağlantı hatası:", err);
+            }
+        });
+
+        document.getElementById("sendBtn").addEventListener("click", async () => {
+            const receiverId = document.getElementById('receiverId').value;
+            const message = document.getElementById('message').value;
+            try {
+                await connection.invoke("SendMessage", receiverId, message);
+                console.log("📤 Mesaj gönderildi.");
+            } catch (err) {
+                console.error("❌ Mesaj gönderme hatası:", err);
+            }
+        });
+    </script>
+</body>
+</html>
