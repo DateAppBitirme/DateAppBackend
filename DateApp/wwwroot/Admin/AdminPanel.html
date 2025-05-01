@@ -1,0 +1,905 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f7f5ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #5f41d9;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+
+        .btn {
+            background-color: #5f41d9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+            .btn:hover {
+                background-color: #4a2fc1;
+                box-shadow: 0 4px 12px rgba(95, 65, 217, 0.3);
+            }
+
+            .btn:focus {
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(95, 65, 217, 0.4);
+            }
+
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            margin: 0;
+        }
+
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+            .btn-danger:hover {
+                background-color: #c82333;
+                box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            }
+
+            .btn-danger:focus {
+                box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.4);
+            }
+
+
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px;
+            padding-right: 45px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fff;
+        }
+
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #aaa;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23aaaaaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>');
+            transition: opacity 0.3s ease;
+        }
+
+            .toggle-password:hover {
+                opacity: 0.7;
+            }
+
+            
+            .toggle-password.visible {
+                background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%235f41d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>');
+                color: #5f41d9;
+            }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #5f41d9;
+            box-shadow: 0 0 0 3px rgba(95, 65, 217, 0.2);
+        }
+
+
+        #dashboardContainer {
+            display: none;
+            width: 90vw;
+            height: 90vh;
+            max-width: 1200px;
+            max-height: 800px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #5f41d9;
+            color: white;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .sidebar h3 {
+                margin-top: 0;
+                font-size: 22px;
+                margin-bottom: 30px;
+                text-align: center;
+            }
+
+        .nav-item {
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+            .nav-item:hover,
+            .nav-item.active {
+                background-color: #4a2fc1;
+            }
+
+        .sidebar .btn {
+            margin-top: auto;
+            background-color: #fff;
+            color: #5f41d9;
+            font-weight: 600;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+            .sidebar .btn:hover {
+                background-color: #f0e DFF;
+                color: #4a2fc1;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+
+        .content {
+            flex: 1;
+            padding: 30px 40px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            background-color: #fdfcff;
+        }
+
+            .content h3 {
+                color: #333;
+                margin-top: 0;
+                margin-bottom: 25px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+                font-size: 20px;
+            }
+
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: none;
+            border-bottom: 1px solid #eee;
+            padding: 14px 16px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #f5f3ff;
+        }
+
+
+        td .btn-sm {
+            margin: 0 2px;
+        }
+
+
+        .form-inline {
+            display: flex;
+            gap: 15px;
+            align-items: stretch;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+            .form-inline input,
+            .form-inline select {
+                flex: 1;
+                margin: 0;
+            }
+
+            .form-inline .btn {
+                white-space: nowrap;
+                height: auto;
+                align-self: center;
+                margin: 0;
+            }
+
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235f41d9"><path d="M7 10l5 5 5-5H7z"/></svg>'); /* Ok rengi güncellendi */
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 18px;
+            padding-right: 45px !important;
+        }
+
+
+        #usersTab > .btn, #rolesTab > .btn {
+            margin-bottom: 15px;
+            display: inline-block;
+            width: auto;
+        }
+
+
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+
+            #loginContainer {
+                padding: 30px;
+                max-width: 90%;
+            }
+
+            #dashboardContainer {
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                max-height: none;
+                border-radius: 0;
+                flex-direction: column;
+                box-shadow: none;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 10px;
+                justify-content: center;
+                border-radius: 0;
+            }
+
+                .sidebar h3 {
+                    width: 100%;
+                    text-align: center;
+                    margin-bottom: 10px;
+                    font-size: 18px;
+                }
+
+            .nav-item {
+                margin: 5px;
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .sidebar .btn {
+                margin-top: 10px;
+                width: auto;
+                padding: 8px 15px;
+                flex-grow: 1;
+                max-width: 150px;
+            }
+
+
+            .content {
+                padding: 20px;
+            }
+
+            .form-inline {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+                .form-inline input,
+                .form-inline select,
+                .form-inline .btn {
+                    width: 100%;
+                }
+
+                .form-inline .btn {
+                    order: 1;
+                }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+
+        #loginError {
+            color: #dc3545;
+            margin-top: 15px;
+            display: none;
+            font-weight: 500;
+        }
+
+        select {
+            padding-right: 45px !important;
+            background-position: right 15px center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginContainer">
+        <h2>Yönetici Girişi</h2>
+        <div class="form-group">
+            <label for="username">Kullanıcı Adı</label>
+            <input type="text" id="username" placeholder="Kullanıcı adınızı girin">
+        </div>
+        <div class="form-group">
+            <label for="password">Şifre</label>
+            <div class="password-wrapper">
+                <input type="password" id="password" placeholder="Şifrenizi girin">
+                <span class="toggle-password" onclick="togglePasswordVisibility()"></span>
+            </div>
+        </div>
+        <button class="btn" onclick="login()">Giriş Yap</button>
+        <div id="loginError"></div>
+    </div>
+
+    <div id="dashboardContainer">
+        <div class="sidebar">
+            <h3>Admin Panel</h3>
+            <div class="nav-item active" onclick="showTab('users')" id="tab-users">Kullanıcılar</div>
+            <div class="nav-item" onclick="showTab('roles')" id="tab-roles">Roller</div>
+            <div class="nav-item" onclick="showTab('assign')" id="tab-assign">Rol Ata/Çıkar</div>
+            <button class="btn" onclick="logout()">Çıkış Yap</button>
+        </div>
+
+        <div class="content">
+            <div id="usersTab">
+                <h3>Kullanıcılar ve Roller</h3>
+                <button class="btn" onclick="loadUsers()">Yenile</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Kullanıcı Adı</th>
+                            <th>Roller</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="rolesTab" style="display:none;">
+                <h3>Roller</h3>
+                <div class="form-inline">
+                    <input type="text" id="newRoleName" placeholder="Yeni rol adı">
+                    <button class="btn" onclick="createRole()">Rol Oluştur</button>
+                </div>
+                <div class="form-inline">
+                    <select id="existingRoles"></select>
+                    <button class="btn btn-danger" onclick="deleteRole()">Rol Sil</button>
+                </div>
+                <button class="btn" onclick="loadRoles()">Rolleri Yenile</button>
+                <table>
+                    <thead><tr><th>Rol Adı</th></tr></thead>
+                    <tbody id="rolesTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="assignTab" style="display:none;">
+                <h3>Rol Ata veya Kaldır</h3>
+                <div class="form-inline">
+                    <input type="text" id="urUsername" placeholder="Kullanıcı adı">
+                    <select id="urRoles"></select>
+                    <button class="btn" onclick="assignRole()">Ata</button>
+                    <button class="btn btn-danger" onclick="removeRole()">Kaldır</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let token = null;
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('dashboardContainer').style.display = 'none';
+        });
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.toggle-password');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.add('visible');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('visible');
+            }
+        }
+
+        function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errEl = document.getElementById('loginError');
+            errEl.style.display = 'none';
+
+            const loginButton = document.querySelector('#loginContainer .btn');
+            const originalButtonText = loginButton.textContent;
+            loginButton.disabled = true;
+            loginButton.textContent = 'Giriş Yapılıyor...';
+
+
+            fetch('/api/Account/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            })
+                .then(async res => {
+
+                    loginButton.disabled = false;
+                    loginButton.textContent = originalButtonText;
+
+                    if (!res.ok) {
+
+                        let errorMessage = 'Giriş başarısız oldu.';
+                        try {
+                            const errorData = await res.json();
+                            errorMessage = errorData.message || errorData.title || errorMessage;
+                        } catch (e) {
+
+                            console.error("API Hata Yanıtı Parse Edilemedi:", e);
+                            errorMessage = `Sunucu hatası: ${res.status} ${res.statusText}`;
+                        }
+                        throw new Error(errorMessage);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data || !data.token) {
+                        throw new Error('Geçersiz yanıt alındı (token yok).');
+                    }
+
+
+                    try {
+                        const payloadBase64 = data.token.split('.')[1];
+
+                        const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+                        const payload = JSON.parse(payloadJson);
+
+
+
+                        const roles = payload.roles || payload.role;
+                        let isAdmin = false;
+                        if (typeof roles === 'string') {
+                            isAdmin = roles === 'admin';
+                        } else if (Array.isArray(roles)) {
+                            isAdmin = roles.includes('admin');
+                        }
+
+                        if (!isAdmin) {
+                            throw new Error('Yönetici yetkiniz bulunmamaktadır.');
+                        }
+                    } catch (e) {
+                        console.error("Token parse hatası:", e);
+                        throw new Error('Token doğrulaması başarısız oldu.');
+                    }
+
+
+                    token = data.token;
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('dashboardContainer').style.display = 'flex';
+                    showTab('users');
+                    loadUsers();
+                    loadRoles();
+                })
+                .catch(err => {
+                    loginButton.disabled = false;
+                    loginButton.textContent = originalButtonText;
+
+                    errEl.textContent = err.message;
+                    errEl.style.display = 'block';
+                });
+        }
+
+        function logout() {
+            token = null;
+            document.getElementById('dashboardContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        function showTab(tabId) {
+
+            document.querySelectorAll('.content > div[id$="Tab"]').forEach(tabDiv => {
+                tabDiv.style.display = 'none';
+            });
+
+            document.getElementById(tabId + 'Tab').style.display = 'block';
+
+
+            document.querySelectorAll('.sidebar .nav-item').forEach(navItem => {
+                navItem.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+
+            if (tabId === 'users') {
+                loadUsers();
+            } else if (tabId === 'roles') {
+                loadRoles();
+            } else if (tabId === 'assign') {
+
+                populateRoleSelect();
+            }
+        }
+
+        function authHeaders() {
+            if (!token) {
+                console.error("Yetkilendirme token'ı bulunamadı.");
+                logout();
+                throw new Error("Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.");
+            }
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            };
+        }
+
+
+        async function handleFetchError(response) {
+            if (!response.ok) {
+                let errorMessage = `HTTP hatası! Durum: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorData.title || errorMessage;
+                } catch (e) {
+
+                    errorMessage = await response.text();
+                }
+                console.error("API Hatası:", errorMessage);
+                throw new Error(errorMessage);
+            }
+            return response.json();
+        }
+
+
+        function loadUsers() {
+            fetch('/api/Admin/GetAllUsers', { headers: authHeaders() })
+                .then(handleFetchError)
+                .then(data => {
+                    const body = document.getElementById('usersTableBody');
+                    body.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        body.innerHTML = '<tr><td colspan="4">Kullanıcı bulunamadı.</td></tr>';
+                        return;
+                    }
+                    data.forEach(u => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                                    <td>${u.id || 'N/A'}</td>
+                                    <td>${u.userName || 'N/A'}</td>
+                                    <td>${u.roles && u.roles.length > 0 ? u.roles.join(', ') : 'Rol yok'}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.userName}')">Sil</button>
+                                    </td>
+                                `;
+                        body.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    alert('Kullanıcılar yüklenemedi: ' + err.message)
+                    const body = document.getElementById('usersTableBody');
+                    body.innerHTML = `<tr><td colspan="4" style="color:red;">Kullanıcılar yüklenirken bir hata oluştu: ${err.message}</td></tr>`;
+                });
+        }
+
+        function deleteUser(username) {
+            if (!confirm(`'${username}' kullanıcısını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)) return;
+
+            fetch('/api/Admin/DeleteUser', {
+                method: 'DELETE',
+                headers: authHeaders(),
+                body: JSON.stringify({ username: username })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return handleFetchError(response);
+                    }
+                    return true;
+                })
+                .then(() => {
+                    alert(`'${username}' kullanıcısı başarıyla silindi.`);
+                    loadUsers();
+                })
+                .catch(err => alert('Kullanıcı silme işlemi başarısız: ' + err.message));
+        }
+
+        function loadRoles() {
+            fetch('/api/Admin/GetAllRoles', { headers: authHeaders() })
+                .then(handleFetchError)
+                .then(data => {
+                    const tableBody = document.getElementById('rolesTableBody');
+                    const selectExisting = document.getElementById('existingRoles');
+                    tableBody.innerHTML = '';
+                    selectExisting.innerHTML = '';
+
+                    if (!data || data.length === 0) {
+                        tableBody.innerHTML = '<tr><td>Rol bulunamadı.</td></tr>';
+                        selectExisting.innerHTML = '<option value="">Rol Yok</option>';
+                        populateRoleSelect();
+                        return;
+                    }
+
+                    data.forEach(r => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${r.name || 'N/A'}</td>`;
+                        tableBody.appendChild(tr);
+
+
+                        const opt = document.createElement('option');
+                        opt.value = r.name;
+                        opt.textContent = r.name;
+                        selectExisting.appendChild(opt);
+                    });
+
+                    populateRoleSelect();
+                })
+                .catch(err => {
+                    alert('Roller yüklenemedi: ' + err.message);
+                    const tableBody = document.getElementById('rolesTableBody');
+                    const selectExisting = document.getElementById('existingRoles');
+                    tableBody.innerHTML = `<tr><td style="color:red;">Roller yüklenirken bir hata oluştu: ${err.message}</td></tr>`;
+                    selectExisting.innerHTML = '<option value="">Hata</option>';
+                    populateRoleSelect();
+                });
+        }
+
+        function createRole() {
+            const roleNameInput = document.getElementById('newRoleName');
+            const roleName = roleNameInput.value.trim();
+            if (!roleName) {
+                alert('Lütfen geçerli bir rol adı giriniz.');
+                roleNameInput.focus();
+                return;
+            }
+
+
+            const createButton = document.querySelector('#rolesTab .form-inline .btn');
+            const originalButtonText = createButton.textContent;
+            createButton.disabled = true;
+            createButton.textContent = 'Oluşturuluyor...';
+
+            fetch('/api/Admin/CreateRole', {
+                method: 'POST',
+                headers: authHeaders(),
+                body: JSON.stringify({ roleName: roleName })
+            })
+                .then(response => {
+                    createButton.disabled = false;
+                    createButton.textContent = originalButtonText;
+                    if (!response.ok) {
+                        return handleFetchError(response);
+                    }
+                    return true;
+                })
+                .then(() => {
+                    alert(`'${roleName}' rolü başarıyla oluşturuldu.`);
+                    roleNameInput.value = '';
+                    loadRoles();
+                })
+                .catch(err => {
+                    createButton.disabled = false;
+                    createButton.textContent = originalButtonText;
+                    alert('Rol oluşturma başarısız: ' + err.message);
+                });
+        }
+
+        function deleteRole() {
+            const selectExisting = document.getElementById('existingRoles');
+            const roleName = selectExisting.value;
+            if (!roleName) {
+                alert('Lütfen silmek için bir rol seçiniz.');
+                return;
+            }
+
+            if (!confirm(`'${roleName}' rolünü silmek istediğinize emin misiniz? Bu role sahip kullanıcılar etkilenebilir.`)) return;
+
+
+            const deleteButton = document.querySelector('#rolesTab .form-inline .btn-danger');
+            const originalButtonText = deleteButton.textContent;
+            deleteButton.disabled = true;
+            deleteButton.textContent = 'Siliniyor...';
+
+            fetch('/api/Admin/DeleteRole', {
+                method: 'DELETE',
+                headers: authHeaders(),
+                body: JSON.stringify({ roleName: roleName })
+            })
+                .then(response => {
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = originalButtonText;
+                    if (!response.ok) {
+                        return handleFetchError(response);
+                    }
+                    return true;
+                })
+                .then(() => {
+                    alert(`'${roleName}' rolü başarıyla silindi.`);
+                    loadRoles();
+                })
+                .catch(err => {
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = originalButtonText;
+                    alert('Rol silme başarısız: ' + err.message);
+                });
+        }
+
+
+        function populateRoleSelect() {
+            const selectAssign = document.getElementById('urRoles');
+            const selectExisting = document.getElementById('existingRoles');
+            selectAssign.innerHTML = '';
+
+            if (selectExisting.options.length === 0 || (selectExisting.options.length === 1 && !selectExisting.options[0].value)) {
+                selectAssign.innerHTML = '<option value="">Rol Yok</option>';
+                selectAssign.disabled = true;
+            } else {
+                selectAssign.disabled = false;
+
+                Array.from(selectExisting.options).forEach(option => {
+                    if (option.value) {
+                        selectAssign.appendChild(option.cloneNode(true));
+                    }
+                });
+            }
+        }
+
+
+        function modifyUserRole(action) {
+            const usernameInput = document.getElementById('urUsername');
+            const roleSelect = document.getElementById('urRoles');
+            const username = usernameInput.value.trim();
+            const roleName = roleSelect.value;
+
+            if (!username) {
+                alert('Lütfen bir kullanıcı adı girin.');
+                usernameInput.focus();
+                return;
+            }
+            if (!roleName) {
+                alert('Lütfen bir rol seçin.');
+                roleSelect.focus();
+                return;
+            }
+
+            const isAssign = action === 'assign';
+            const endpoint = isAssign ? '/api/Admin/AssignRole' : '/api/Admin/RemoveRoleFromUser';
+            const method = isAssign ? 'POST' : 'DELETE';
+            const actionText = isAssign ? 'atama' : 'kaldırma';
+            const actionButton = document.querySelector(`#assignTab .form-inline .btn${isAssign ? ':not(.btn-danger)' : '.btn-danger'}`);
+
+
+            const originalButtonText = actionButton.textContent;
+            actionButton.disabled = true;
+            actionButton.textContent = isAssign ? 'Atanıyor...' : 'Kaldırılıyor...';
+
+
+            fetch(endpoint, {
+                method: method,
+                headers: authHeaders(),
+                body: JSON.stringify({ username: username, roleName: roleName })
+            })
+                .then(response => {
+                    actionButton.disabled = false;
+                    actionButton.textContent = originalButtonText;
+                    if (!response.ok) {
+                        return handleFetchError(response);
+                    }
+                    return response.text();
+                })
+                .then(() => {
+                    alert(`'${username}' kullanıcısına '${roleName}' rolü başarıyla ${isAssign ? 'atandı' : 'kaldırıldı'}.`);
+                    loadUsers();
+                })
+                .catch(err => {
+                    actionButton.disabled = false;
+                    actionButton.textContent = originalButtonText;
+                    alert(`Rol ${actionText} işlemi başarısız: ${err.message}`);
+                });
+        }
+
+        function assignRole() {
+            modifyUserRole('assign');
+        }
+
+        function removeRole() {
+            modifyUserRole('remove');
+        }
+
+    </script>
+</body>
+</html>

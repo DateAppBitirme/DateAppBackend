@@ -1,5 +1,4 @@
-﻿// ChatHub.cs - Düzeltilmiş sürüm
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using DateApp.Data;
 using DateApp.Models;
@@ -47,13 +46,13 @@ namespace DateApp.Hubs
             var senderId = Context.UserIdentifier;
             if (string.IsNullOrEmpty(senderId))
             {
-                throw new HubException("Gönderici kimliği bulunamadı.");
+                throw new HubException("Sender ID not found.");
             }
 
             var receiver = await _dbContext.Users.FindAsync(receiverId);
             if (receiver == null)
             {
-                throw new HubException("Alıcı bulunamadı.");
+                throw new HubException("No recipient found.");
             }
 
             var newMessage = new PrivateMessage
