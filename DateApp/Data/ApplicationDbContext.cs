@@ -9,6 +9,7 @@ namespace DateApp.Data
     {
 
         public DbSet<PrivateMessage> PrivateMessages { get; set; }
+        
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {

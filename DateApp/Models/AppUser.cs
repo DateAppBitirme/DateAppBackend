@@ -10,8 +10,8 @@ namespace DateApp.Models
 
         public DateTime DateOfBirth { get; set; }
         
-        public bool IsOnline { get; set; }
+        public bool? IsOnline { get; set; }
         
-        public DateTime LastSeen { get; set; }
+        public DateTime? LastSeen { get; set; }
     }
 }

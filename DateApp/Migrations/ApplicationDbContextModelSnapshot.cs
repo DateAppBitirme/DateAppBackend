@@ -47,10 +47,10 @@ namespace DateApp.Migrations
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsOnline")
+                    b.Property<bool?>("IsOnline")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastSeen")
+                    b.Property<DateTime?>("LastSeen")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
@@ -165,13 +165,13 @@ namespace DateApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "0b7680e3-b299-4851-8164-262529fa0412",
+                            Id = "adfce66d-1c02-465d-a028-ab145b0bf26e",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "0ba96ed3-9742-442d-af31-67bb513a618a",
+                            Id = "a377d037-7c14-4736-a38a-98af7d82b96d",
                             Name = "user",
                             NormalizedName = "USER"
                         });
