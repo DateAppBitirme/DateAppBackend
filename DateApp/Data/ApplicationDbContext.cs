@@ -9,7 +9,9 @@ namespace DateApp.Data
     {
 
         public DbSet<PrivateMessage> PrivateMessages { get; set; }
-        
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<UserBlock> UserBlocks { get; set; }
+
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -27,7 +29,8 @@ namespace DateApp.Data
             };
             builder.Entity<IdentityRole>().HasData(roles);
 
-            builder.Entity<AppUser>(entity => {
+            builder.Entity<AppUser>(entity =>
+            {
                 entity.HasIndex(u => u.PhoneNumber).IsUnique();
             });
 
@@ -41,6 +44,30 @@ namespace DateApp.Data
                 .HasOne(pm => pm.Receiver)
                 .WithMany()
                 .HasForeignKey(pm => pm.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            // ChatMessage için yapılandırmalar
+            builder.Entity<ChatMessage>()
+                .HasOne(m => m.SenderUser)
+                .WithMany() // Kullanıcının birçok mesajı olabilir
+                .HasForeignKey(m => m.SenderUserId)
+                .OnDelete(DeleteBehavior.Restrict); // Kullanıcı silinirse mesajları ne olacak?
+
+            builder.Entity<UserBlock>()
+            .HasKey(ub => new { ub.BlockerId, ub.BlockedId })
+            .IsClustered(false);
+
+            builder.Entity<UserBlock>()
+                .HasOne(ub => ub.Blocker)
+                .WithMany(u => u.BlockedUsers)      // AppUser’da ICollection<UserBlock> BlockedUsers
+                .HasForeignKey(ub => ub.BlockerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UserBlock>()
+                .HasOne(ub => ub.Blocked)
+                .WithMany(u => u.BlockedByUsers)    // AppUser’da ICollection<UserBlock> BlockedByUsers
+                .HasForeignKey(ub => ub.BlockedId)
                 .OnDelete(DeleteBehavior.Restrict);
 
         }
