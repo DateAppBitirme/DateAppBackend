@@ -134,6 +134,7 @@ namespace DateApp.Controllers
 
                 return Ok(new NewUserDto
                 {
+                    UserId = appUser.Id,
                     Username = appUser.UserName!,
                     Email = appUser.Email!,
                     Token = await _tokenService.CreateToken(appUser),
