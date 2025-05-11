@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
+using Azure.Identity;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,8 +50,24 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+var keyVaultUri = builder.Configuration["KeyVault:VaultUri"];
+if (!string.IsNullOrEmpty(keyVaultUri) && Uri.TryCreate(keyVaultUri, UriKind.Absolute, out var validUri))
+{
+    builder.Configuration.AddAzureKeyVault(validUri, new DefaultAzureCredential());
+    Console.WriteLine($"Successfully loaded configuration from Key Vault: {validUri}");
+}
+else
+{
+    Console.WriteLine("Key Vault URI not found or invalid in configuration. Skipping Key Vault configuration.");
+}
+
+var connectionString = builder.Configuration["ConnectionStrings:DateAppConnection"];
+// VEYA doğrudan Key Vault secret adıyla: builder.Configuration["DatabaseConnectionString"]
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DateAppConnection")));
+    options.UseSqlServer(connectionString));
+
+/*builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DateAppConnection")));*/
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
@@ -66,19 +84,37 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+
 builder.Services.AddSingleton<IActiveUserTracker, InMemoryActiveUserTracker>();
 
-// SignalR
-builder.Services.AddSignalR(options =>
+var signalRBuilder = builder.Services.AddSignalR();
+var signalRConnectionString = builder.Configuration["SignalRConnectionString"]; // Key Vault'taki secret adı
+if (!string.IsNullOrEmpty(signalRConnectionString))
 {
-    options.EnableDetailedErrors = true; // Geliştirme sırasında detaylı hata mesajları için
-});
+    signalRBuilder.AddAzureSignalR(signalRConnectionString); // Azure SignalR Service kullanılıyorsa
+    Console.WriteLine("Azure SignalR Service configured.");
+}
+else
+{
+    Console.WriteLine("SignalRConnectionString not found. Azure SignalR Service NOT configured.");
+}
 
+// CORS
+/*
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});*/
 var jwtSigningKey = builder.Configuration["JWT:SigningKey"];
-
 if (string.IsNullOrWhiteSpace(jwtSigningKey))
     throw new InvalidOperationException("JWT signing key must not be null or empty.");
-    
+
 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey));
 builder.Services.AddSingleton(securityKey);
 
@@ -155,7 +191,7 @@ var app = builder.Build();
 app.UseStaticFiles();
 
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
