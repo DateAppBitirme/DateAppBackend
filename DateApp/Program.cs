@@ -84,10 +84,6 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-<<<<<<< Updated upstream
-builder.Services.AddSignalR();
-=======
-builder.Services.AddSingleton<IActiveUserTracker, InMemoryActiveUserTracker>();
 
 // SignalR
 /*
@@ -106,7 +102,6 @@ else
 {
     Console.WriteLine("SignalRConnectionString not found. Azure SignalR Service NOT configured.");
 }
->>>>>>> Stashed changes
 
 // CORS
 /*

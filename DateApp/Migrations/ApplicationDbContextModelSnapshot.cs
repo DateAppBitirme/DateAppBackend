@@ -165,21 +165,13 @@ namespace DateApp.Migrations
                     b.HasData(
                         new
                         {
-<<<<<<< Updated upstream
-                            Id = "adfce66d-1c02-465d-a028-ab145b0bf26e",
-=======
                             Id = "1aff304c-4de7-4685-892d-e1bdcc2d55c6",
->>>>>>> Stashed changes
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-<<<<<<< Updated upstream
-                            Id = "a377d037-7c14-4736-a38a-98af7d82b96d",
-=======
                             Id = "1dd64fab-26d0-4856-9df3-03f5be6390ea",
->>>>>>> Stashed changes
                             Name = "user",
                             NormalizedName = "USER"
                         });
