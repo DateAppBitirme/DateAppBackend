@@ -4,6 +4,7 @@ using DateApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DateApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250506161551_AddUserBlockModel")]
+    partial class AddUserBlockModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -216,14 +219,13 @@ namespace DateApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1aff304c-4de7-4685-892d-e1bdcc2d55c6",
+                            Id = "066cd01c-6c0e-4ea9-af33-e4dedaf4da46",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "1dd64fab-26d0-4856-9df3-03f5be6390ea",
-
+                            Id = "34c2c5cd-2352-4796-8272-c9b4a2ba9dc1",
                             Name = "user",
                             NormalizedName = "USER"
                         });

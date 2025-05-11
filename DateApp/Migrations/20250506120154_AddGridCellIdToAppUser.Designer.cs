@@ -4,6 +4,7 @@ using DateApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DateApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250506120154_AddGridCellIdToAppUser")]
+    partial class AddGridCellIdToAppUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,34 +109,6 @@ namespace DateApp.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("DateApp.Models.ChatMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("GroupName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MessageContent")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SenderUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SenderUserId");
-
-                    b.ToTable("ChatMessages");
-                });
-
             modelBuilder.Entity("DateApp.Models.PrivateMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -167,26 +142,6 @@ namespace DateApp.Migrations
                     b.ToTable("PrivateMessages");
                 });
 
-            modelBuilder.Entity("DateApp.Models.UserBlock", b =>
-                {
-                    b.Property<string>("BlockerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("BlockedId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("BlockedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("BlockerId", "BlockedId");
-
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("BlockerId", "BlockedId"), false);
-
-                    b.HasIndex("BlockedId");
-
-                    b.ToTable("UserBlocks");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -216,14 +171,13 @@ namespace DateApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1aff304c-4de7-4685-892d-e1bdcc2d55c6",
+                            Id = "3f8778fd-382b-406b-9355-8381fd350002",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "1dd64fab-26d0-4856-9df3-03f5be6390ea",
-
+                            Id = "33574930-4ad0-4b74-8e9f-4d146384badd",
                             Name = "user",
                             NormalizedName = "USER"
                         });
@@ -335,17 +289,6 @@ namespace DateApp.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("DateApp.Models.ChatMessage", b =>
-                {
-                    b.HasOne("DateApp.Models.AppUser", "SenderUser")
-                        .WithMany()
-                        .HasForeignKey("SenderUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("SenderUser");
-                });
-
             modelBuilder.Entity("DateApp.Models.PrivateMessage", b =>
                 {
                     b.HasOne("DateApp.Models.AppUser", "Receiver")
@@ -363,25 +306,6 @@ namespace DateApp.Migrations
                     b.Navigation("Receiver");
 
                     b.Navigation("Sender");
-                });
-
-            modelBuilder.Entity("DateApp.Models.UserBlock", b =>
-                {
-                    b.HasOne("DateApp.Models.AppUser", "Blocked")
-                        .WithMany("BlockedByUsers")
-                        .HasForeignKey("BlockedId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DateApp.Models.AppUser", "Blocker")
-                        .WithMany("BlockedUsers")
-                        .HasForeignKey("BlockerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Blocked");
-
-                    b.Navigation("Blocker");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -433,13 +357,6 @@ namespace DateApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("DateApp.Models.AppUser", b =>
-                {
-                    b.Navigation("BlockedByUsers");
-
-                    b.Navigation("BlockedUsers");
                 });
 #pragma warning restore 612, 618
         }

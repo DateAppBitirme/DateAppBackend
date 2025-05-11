@@ -4,6 +4,7 @@ using DateApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DateApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250506130934_ChatMessageInit")]
+    partial class ChatMessageInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -167,26 +170,6 @@ namespace DateApp.Migrations
                     b.ToTable("PrivateMessages");
                 });
 
-            modelBuilder.Entity("DateApp.Models.UserBlock", b =>
-                {
-                    b.Property<string>("BlockerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("BlockedId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("BlockedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("BlockerId", "BlockedId");
-
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("BlockerId", "BlockedId"), false);
-
-                    b.HasIndex("BlockedId");
-
-                    b.ToTable("UserBlocks");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -216,14 +199,13 @@ namespace DateApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1aff304c-4de7-4685-892d-e1bdcc2d55c6",
+                            Id = "e7974673-3e57-4547-8148-1b94c9aa6305",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "1dd64fab-26d0-4856-9df3-03f5be6390ea",
-
+                            Id = "add274ee-8b25-4c27-9ddf-dde1acac69e0",
                             Name = "user",
                             NormalizedName = "USER"
                         });
@@ -365,25 +347,6 @@ namespace DateApp.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("DateApp.Models.UserBlock", b =>
-                {
-                    b.HasOne("DateApp.Models.AppUser", "Blocked")
-                        .WithMany("BlockedByUsers")
-                        .HasForeignKey("BlockedId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DateApp.Models.AppUser", "Blocker")
-                        .WithMany("BlockedUsers")
-                        .HasForeignKey("BlockerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Blocked");
-
-                    b.Navigation("Blocker");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -433,13 +396,6 @@ namespace DateApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("DateApp.Models.AppUser", b =>
-                {
-                    b.Navigation("BlockedByUsers");
-
-                    b.Navigation("BlockedUsers");
                 });
 #pragma warning restore 612, 618
         }

@@ -18,8 +18,8 @@ namespace DateApp.Dtos.AccountDto
         public string? Password { get; init; }
 
         [Required]
-        [RegularExpression(@"^\+905\d{9}$",
-            ErrorMessage = "Please enter a valid phone number. Example: +905xxxxxxxxx")]
+        [RegularExpression(@"^\+90\d{10}$",
+            ErrorMessage = "Please enter a valid phone number. Example: +90xxxxxxxxxx")]
         public string? PhoneNumber { get; init; }
 
         [Required(ErrorMessage = "Gender is required!")]

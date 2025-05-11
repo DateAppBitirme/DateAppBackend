@@ -85,12 +85,8 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 
-// SignalR
-/*
-builder.Services.AddSignalR(options =>
-{
-   options.EnableDetailedErrors = true; // Geliştirme sırasında detaylı hata mesajları için
-});*/
+builder.Services.AddSingleton<IActiveUserTracker, InMemoryActiveUserTracker>();
+
 var signalRBuilder = builder.Services.AddSignalR();
 var signalRConnectionString = builder.Configuration["SignalRConnectionString"]; // Key Vault'taki secret adı
 if (!string.IsNullOrEmpty(signalRConnectionString))
@@ -125,6 +121,7 @@ builder.Services.AddSingleton(securityKey);
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IUserBlockService, UserBlockService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -202,11 +199,16 @@ if (app.Environment.IsProduction())
 
 app.UseHttpsRedirection();
 
+
+app.UseRouting();
+
+
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<LocationChatHub>("/locationchathub");
 
 app.MapControllers();
 
