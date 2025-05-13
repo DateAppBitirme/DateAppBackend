@@ -1,4 +1,6 @@
-﻿using DateApp.Dtos.AccountDto;
+﻿using DateApp.Data;
+using DateApp.Dtos.AccountDto;
+using DateApp.Dtos.ComplaintRequestDto;
 using DateApp.Dtos.RoleDto;
 using DateApp.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +17,13 @@ namespace DateApp.Controllers
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
+        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager, ApplicationDbContext context)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _context = context;
         }
 
         [HttpGet("GetAllUsers")]
@@ -236,6 +240,147 @@ namespace DateApp.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("GetAllComplaintAndRequests")]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var complaintsAndRequests = await _context.ComplaintAndRequests
+                .Include(c => c.User)
+                .Where(c => !c.IsDeleted)
+                .Select(c => new ComplaintAndRequestDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    CreatedAt = c.CreatedAt,
+                    IsActive = c.IsActive,
+                    UserName = c.User != null ? c.User.UserName : ""
+                })
+                    .ToListAsync();
+
+                return Ok(complaintsAndRequests);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpGet("GetAllComplaint")]
+        public async Task<IActionResult> GetAllComplaint()
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var complaints = await _context.ComplaintAndRequests
+                    .Include(c => c.User)
+                    .Where(c => c.IsActive && !c.IsDeleted && c.ComplaintTypeId != null)
+                    .Select(c => new ComplaintAndRequestDto
+                    {
+                        Id = c.Id,
+                        Title = c.Title,
+                        Description = c.Description,
+                        CreatedAt = c.CreatedAt,
+                        IsActive = c.IsActive,
+                        UserName = c.User != null ? c.User.UserName : ""
+                    })
+                    .ToListAsync();
+                return Ok(complaints);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("GetAllRequest")]
+        public async Task<IActionResult> GetAllRequest()
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var requests = await _context.ComplaintAndRequests
+                .Include(c => c.User)
+                .Where(c => c.IsActive && !c.IsDeleted && c.RequestTypeId != null)
+                .Select(c => new ComplaintAndRequestDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    CreatedAt = c.CreatedAt,
+                    IsActive = c.IsActive,
+                    UserName = c.User != null ? c.User.UserName : ""
+                })
+                    .ToListAsync();
+                return Ok(requests);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("DeleteComplaintAndRequest/{id}")]
+        public async Task<IActionResult> DeleteComplaintAndRequest(int id) //Soft delete yaptım. Yani veriler silinse de görünebilecek.
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var complaintAndRequest = await _context.ComplaintAndRequests.FindAsync(id);
+                if (complaintAndRequest == null)
+                {
+                    return NotFound("Şikayet veya istek bulunamadı.");
+                }
+                complaintAndRequest.IsDeleted = true;
+                _context.ComplaintAndRequests.Update(complaintAndRequest);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Şikayet veya istek başarıyla silindi." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("ResolveComplaintAndRequest/{id}")]
+        public async Task<IActionResult> ResolveComplaintAndRequest(int id)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var complaintAndRequest = await _context.ComplaintAndRequests.FindAsync(id);
+                if (complaintAndRequest == null)
+                {
+                    return NotFound("Şikayet veya istek bulunamadı.");
+                }
+                complaintAndRequest.IsActive = false;
+                _context.ComplaintAndRequests.Update(complaintAndRequest);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Şikayet veya istek başarıyla çözüldü." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
 
 
     }

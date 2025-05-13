@@ -2,7 +2,7 @@
 
 namespace DateApp.Dtos.ComplaintRequestDto
 {
-    public class CreateComplaintRequestDto
+    public class CreateRequestDto
     {
         [Required]
         public string? Title { get; set; }
@@ -10,7 +10,6 @@ namespace DateApp.Dtos.ComplaintRequestDto
         [Required]
         public string? Description { get; set; }
 
-        public int? ComplaintTypeId { get; set; }
         public int? RequestTypeId { get; set; }
     }
 }

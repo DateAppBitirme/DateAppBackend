@@ -4,15 +4,15 @@
     {
         public enum ComplaintType
         {
-            User = 1,
-            Content = 2,
-            Other = 3
+            User = 0,
+            Content = 1,
+            Other = 2
         }
         public enum RequestType
         {
-            FeatureRequest = 1,
-            BugReport = 2,
-            Other = 3
+            FeatureRequest = 0,
+            BugReport = 1,
+            Other = 2
         }
     }
 }

@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DateApp.Controllers
 {
-    [Authorize(Policy = "AdminPolicy")]
     [Route("api/[controller]")]
     [ApiController]
     public class ChatController : ControllerBase

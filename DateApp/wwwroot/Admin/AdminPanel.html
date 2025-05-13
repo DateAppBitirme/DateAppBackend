@@ -401,6 +401,47 @@
             padding-right: 45px !important;
             background-position: right 15px center;
         }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-resolved {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .complaint-table {
+            margin-top: 20px;
+        }
+
+        .filter-buttons {
+            margin-bottom: 15px;
+        }
+        .scrollable-table {
+            max-height: 70vh;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            margin-top: 15px;
+        }
+
+            .scrollable-table::-webkit-scrollbar {
+                width: 8px;
+                background-color: #f5f5f5;
+            }
+
+            .scrollable-table::-webkit-scrollbar-thumb {
+                background-color: #5f41d9;
+                border-radius: 4px;
+            }
     </style>
 </head>
 <body>
@@ -427,6 +468,7 @@
             <div class="nav-item active" onclick="showTab('users')" id="tab-users">Kullanıcılar</div>
             <div class="nav-item" onclick="showTab('roles')" id="tab-roles">Roller</div>
             <div class="nav-item" onclick="showTab('assign')" id="tab-assign">Rol Ata/Çıkar</div>
+            <div class="nav-item" onclick="showTab('complaints')" id="tab-complaints">Şikayet ve İstekler</div>
             <button class="btn" onclick="logout()">Çıkış Yap</button>
         </div>
 
@@ -472,6 +514,32 @@
                     <button class="btn" onclick="assignRole()">Ata</button>
                     <button class="btn btn-danger" onclick="removeRole()">Kaldır</button>
                 </div>
+            </div>
+        </div>
+
+        <div id="complaintsTab" style="display:none;">
+            <h3>Şikayet ve İstek Yönetimi</h3>
+            <div class="filter-buttons">
+                <button class="btn btn-sm" onclick="loadComplaintsRequests('all')">Tümü</button>
+                <button class="btn btn-sm" onclick="loadComplaintsRequests('complaint')">Sadece Şikayetler</button>
+                <button class="btn btn-sm" onclick="loadComplaintsRequests('request')">Sadece İstekler</button>
+            </div>
+
+            <div class="scrollable-table">
+                <table class="complaint-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Başlık</th>
+                            <th>Açıklama</th>
+                            <th>Kullanıcı</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -898,6 +966,87 @@
 
         function removeRole() {
             modifyUserRole('remove');
+        }
+        //yeni fonksiyon
+        function loadComplaintsRequests(type = 'all') {
+            let endpoint = '/api/Admin/GetAllComplaintAndRequests';
+            if (type === 'complaint') endpoint = '/api/Admin/GetAllComplaint';
+            if (type === 'request') endpoint = '/api/Admin/GetAllRequest';
+
+            fetch(endpoint, { headers: authHeaders() })
+                .then(handleFetchError)
+                .then(data => {
+                    const body = document.getElementById('complaintsTableBody');
+                    body.innerHTML = '';
+
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.id}</td>
+                            <td>${item.title}</td>
+                            <td>${item.description}</td>
+                            <td>${item.userName}</td>
+                            <td>${new Date(item.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                <span class="status-badge ${item.isActive ? 'status-active' : 'status-resolved'}">
+                                    ${item.isActive ? 'Aktif' : 'Çözüldü'}
+                                </span>
+                            </td>
+                            <td>
+                                ${item.isActive ?
+                                `<button class="btn btn-sm btn-success" onclick="resolveComplaint(${item.id})">Çöz</button>` :
+                                ''}
+                                <button class="btn btn-sm btn-danger" onclick="deleteComplaint(${item.id})">Sil</button>
+                            </td>
+                        `;
+                        body.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    alert('Veriler yüklenemedi: ' + err.message);
+                    const body = document.getElementById('complaintsTableBody');
+                    body.innerHTML = `<tr><td colspan="7" style="color:red;">Yükleme hatası: ${err.message}</td></tr>`;
+                });
+        }
+
+        function deleteComplaint(id) {
+            if (!confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
+
+            fetch(`/api/Admin/DeleteComplaintAndRequest/${id}`, {
+                method: 'DELETE',
+                headers: authHeaders()
+            })
+                .then(response => {
+                    if (!response.ok) return handleFetchError(response);
+                    alert('Başarıyla silindi');
+                    loadComplaintsRequests();
+                })
+                .catch(err => alert('Silme işlemi başarısız: ' + err.message));
+        }
+
+        function resolveComplaint(id) {
+            if (!confirm('Bu kaydı çözüldü olarak işaretlemek istediğinize emin misiniz?')) return;
+
+            fetch(`/api/Admin/ResolveComplaintAndRequest/${id}`, {
+                method: 'PUT',
+                headers: authHeaders()
+            })
+                .then(response => {
+                    if (!response.ok) return handleFetchError(response);
+                    alert('Başarıyla çözüldü olarak işaretlendi');
+                    loadComplaintsRequests();
+                })
+                .catch(err => alert('İşlem başarısız: ' + err.message));
+        }
+
+        // showTab fonksiyonu güncellemesi
+        function showTab(tab) {
+            ['users', 'roles', 'assign', 'complaints'].forEach(t => {
+                document.getElementById(t + 'Tab').style.display = (t === tab ? 'block' : 'none');
+                document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+            });
+
+            if (tab === 'complaints') loadComplaintsRequests();
         }
 
     </script>
