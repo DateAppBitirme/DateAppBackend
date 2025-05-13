@@ -66,8 +66,6 @@ var connectionString = builder.Configuration["ConnectionStrings:DateAppConnectio
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-/*builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DateAppConnection")));*/
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
