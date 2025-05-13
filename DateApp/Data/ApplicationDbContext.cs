@@ -11,6 +11,7 @@ namespace DateApp.Data
         public DbSet<PrivateMessage> PrivateMessages { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<UserBlock> UserBlocks { get; set; }
+        public DbSet<ComplaintAndRequest> ComplaintAndRequests { get; set; }
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -24,8 +25,8 @@ namespace DateApp.Data
 
             List<IdentityRole> roles = new List<IdentityRole>
             {
-                new IdentityRole { Name = "admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Name = "user", NormalizedName = "USER" }
+                new IdentityRole { Id = "1",Name = "admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Id = "2",Name = "user", NormalizedName = "USER" }
             };
             builder.Entity<IdentityRole>().HasData(roles);
 
@@ -69,6 +70,15 @@ namespace DateApp.Data
                 .WithMany(u => u.BlockedByUsers)    // AppUser’da ICollection<UserBlock> BlockedByUsers
                 .HasForeignKey(ub => ub.BlockedId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Kullanıcı ile ilişki
+            builder.Entity<ComplaintAndRequest>()
+                 .HasOne(cr => cr.User)
+                 .WithMany()
+                 .HasForeignKey(cr => cr.UserId)
+                 .OnDelete(DeleteBehavior.Restrict);
+
+
 
         }
     }
