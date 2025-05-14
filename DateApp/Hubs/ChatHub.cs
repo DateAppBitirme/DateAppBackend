@@ -67,12 +67,13 @@ namespace DateApp.Hubs
             await _dbContext.SaveChangesAsync();
             
             var senderUser = await _dbContext.Users.FindAsync(senderId);
+            var receiverUser = await _dbContext.Users.FindAsync(receiverId);
 
             var payload = new
             {
                 newMessage.Id,
                 newMessage.SenderId,
-                SenderUserName = senderUser?.UserName,
+                ReceiverUserName = receiverUser?.UserName,
                 newMessage.ReceiverId,
                 newMessage.Content,
                 SentAt = newMessage.SentAt
