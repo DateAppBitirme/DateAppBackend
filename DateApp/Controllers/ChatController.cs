@@ -28,6 +28,7 @@ namespace DateApp.Controllers
                            (m.SenderId == userId && m.ReceiverId == currentUserId))
                 .OrderByDescending(m => m.SentAt)
                 .Skip((page - 1) * 20)
+                .Include(m => m.Receiver)
                 .Take(40)
                 .Select(m => new
                 {
