@@ -28,10 +28,12 @@ namespace DateApp.Controllers
                            (m.SenderId == userId && m.ReceiverId == currentUserId))
                 .OrderByDescending(m => m.SentAt)
                 .Skip((page - 1) * 20)
-                .Take(20)
+                .Take(40)
                 .Select(m => new
                 {
+                    m.Id,
                     m.SenderId,
+                    m.Receiver!.UserName,
                     m.ReceiverId,
                     m.Content,
                     m.SentAt
@@ -41,22 +43,22 @@ namespace DateApp.Controllers
             return Ok(messages);
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchUsers([FromQuery] string query)
-        {
-            var users = await _dbContext.Users
-                .Where(u => u.UserName.Contains(query) || u.Email.Contains(query))
-                .Select(u => new
-                {
-                    u.Id,
-                    u.UserName,
-                    u.Email,
-                    u.IsOnline,
-                    u.LastSeen
-                })
-                .ToListAsync();
+        // [HttpGet("search")]
+        // public async Task<IActionResult> SearchUsers([FromQuery] string query)
+        // {
+        //     var users = await _dbContext.Users
+        //         .Where(u => u.UserName.Contains(query) || u.Email.Contains(query))
+        //         .Select(u => new
+        //         {
+        //             u.Id,
+        //             u.UserName,
+        //             u.Email,
+        //             u.IsOnline,
+        //             u.LastSeen
+        //         })
+        //         .ToListAsync();
 
-            return Ok(users);
-        }
+        //     return Ok(users);
+        // }
     }
 }
