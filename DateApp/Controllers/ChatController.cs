@@ -54,30 +54,59 @@ namespace DateApp.Controllers
                 return Unauthorized();
             }
 
-            var conversations = await _dbContext.PrivateMessages
-                .Where(pm => pm.SenderId == currentUserId || pm.ReceiverId == currentUserId)
-                .GroupBy(pm => pm.SenderId == currentUserId ? pm.ReceiverId : pm.SenderId)
-                .Select(g => new {
-                    OtherUserId = g.Key,
-                    LastMessage = g.OrderByDescending(m => m.SentAt).FirstOrDefault()
-                })
-                .Where(g => g.LastMessage != null)
-                .OrderByDescending(g => g.LastMessage!.SentAt)
-                .ToListAsync();
-
-            var otherUserIds = conversations.Select(c => c.OtherUserId).ToList();
-            var otherUsers = await _dbContext.Users
-                                             .Where(u => otherUserIds.Contains(u.Id))
-                                             .ToDictionaryAsync(u => u.Id, u => u.UserName); 
-
-            var result = conversations.Select(c => new RecentConversationDto
+            try
             {
-                OtherUserId = c.OtherUserId,
-                OtherUserName = otherUsers.TryGetValue(c.OtherUserId, out var userName) ? userName : "Bilinmeyen",
-            }).ToList();
+                var conversationPartners = await _dbContext.PrivateMessages
+                    .Where(pm => pm.SenderId == currentUserId || pm.ReceiverId == currentUserId)
+                    .GroupBy(pm => pm.SenderId == currentUserId ? pm.ReceiverId : pm.SenderId) 
+                    .Select(g => new
+                    {
+                        OtherUserId = g.Key, 
+                        LastMessageTimestamp = g.Max(m => m.SentAt) 
+                    })
+                    .OrderByDescending(c => c.LastMessageTimestamp)                                                    
+                    .ToListAsync();
 
+              
 
-            return Ok(result);
+                if (!conversationPartners.Any())
+                {
+                    return Ok(new List<RecentConversationDto>());
+                }
+
+                var otherUserIds = conversationPartners
+                                    .Select(c => c.OtherUserId)
+                                    .Where(id => id != null) 
+                                    .Distinct()
+                                    .ToList();
+
+                if (!otherUserIds.Any())
+                { 
+                    return Ok(new List<RecentConversationDto>());
+                }
+                
+                var otherUsersMap = await _dbContext.Users
+                                                 .Where(u => otherUserIds.Contains(u.Id))
+                                                 .ToDictionaryAsync(u => u.Id, u => u.UserName); 
+ 
+                var result = conversationPartners.Select(c =>
+                {
+                    if (c.OtherUserId == null) return null; // Bu durum olmamalı
+                    return new RecentConversationDto
+                    {
+                        OtherUserId = c.OtherUserId,
+                        OtherUserName = otherUsersMap.TryGetValue(c.OtherUserId, out var userName) ? (userName ?? "Kullanıcı Adı Yok") : "Bilinmeyen Kullanıcı"    
+                    };
+                })
+                .Where(dto => dto != null) 
+                .ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Son konuşmalar alınırken sunucuda bir hata oluştu.");
+            }
         }
     }
 }
