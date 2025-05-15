@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System;
 using DateApp.Data;
 using Microsoft.EntityFrameworkCore;
+using DateApp.Dtos.ChatDto;
 
 namespace DateApp.Controllers
 {
@@ -44,22 +45,39 @@ namespace DateApp.Controllers
             return Ok(messages);
         }
 
-        // [HttpGet("search")]
-        // public async Task<IActionResult> SearchUsers([FromQuery] string query)
-        // {
-        //     var users = await _dbContext.Users
-        //         .Where(u => u.UserName.Contains(query) || u.Email.Contains(query))
-        //         .Select(u => new
-        //         {
-        //             u.Id,
-        //             u.UserName,
-        //             u.Email,
-        //             u.IsOnline,
-        //             u.LastSeen
-        //         })
-        //         .ToListAsync();
+        [HttpGet("recent-conversations")]
+        public async Task<IActionResult> GetRecentConversations() 
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                return Unauthorized();
+            }
 
-        //     return Ok(users);
-        // }
+            var conversations = await _dbContext.PrivateMessages
+                .Where(pm => pm.SenderId == currentUserId || pm.ReceiverId == currentUserId)
+                .GroupBy(pm => pm.SenderId == currentUserId ? pm.ReceiverId : pm.SenderId)
+                .Select(g => new {
+                    OtherUserId = g.Key,
+                    LastMessage = g.OrderByDescending(m => m.SentAt).FirstOrDefault()
+                })
+                .Where(g => g.LastMessage != null)
+                .OrderByDescending(g => g.LastMessage!.SentAt)
+                .ToListAsync();
+
+            var otherUserIds = conversations.Select(c => c.OtherUserId).ToList();
+            var otherUsers = await _dbContext.Users
+                                             .Where(u => otherUserIds.Contains(u.Id))
+                                             .ToDictionaryAsync(u => u.Id, u => u.UserName); 
+
+            var result = conversations.Select(c => new RecentConversationDto
+            {
+                OtherUserId = c.OtherUserId,
+                OtherUserName = otherUsers.TryGetValue(c.OtherUserId, out var userName) ? userName : "Bilinmeyen",
+            }).ToList();
+
+
+            return Ok(result);
+        }
     }
 }
