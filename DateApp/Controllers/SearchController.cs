@@ -74,5 +74,26 @@ namespace DateApp.Controllers
                 return StatusCode(500, "Arama sırasında bir sorun oluştu. Lütfen daha sonra tekrar deneyin.");
             }
         }
+
+
+        [HttpGet("get-userid-by-username")]
+        public async Task<IActionResult> GetUserIdByUsername([FromQuery] string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                return BadRequest(new { message = "Kullanıcı adı parametresi boş olamaz." });
+            }
+
+            var user = await _userManager.FindByNameAsync(userName);
+
+            if (user == null)
+            {
+                return NotFound(new { message = $"'{userName}' kullanıcı adına sahip bir kullanıcı bulunamadı." });
+            }
+
+           
+            return Ok(new { userId = user.Id });
+        }
+
     }
 }
