@@ -425,6 +425,37 @@ namespace DateApp.Controllers
                 return BadRequest(ModelState);
             }
         }
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                return Unauthorized(new { message = "Kullanıcı kimliği doğrulanamadı." });
+            }
+
+
+            var appUser = await _userManager.FindByIdAsync(currentUserId);
+
+            if (appUser == null)
+            {
+                return NotFound(new { message = "Kullanıcı bulunamadı." });
+            }
+
+            var userProfileDto = new UserProfileUpdateDto
+            {
+                UserId = appUser.Id,
+                UserName = appUser.UserName!,
+                Email = appUser.Email!,     
+                PhoneNumber = appUser.PhoneNumber,
+                DateOfBirth = appUser.DateOfBirth,
+                EmailConfirmed = appUser.EmailConfirmed
+            };
+
+           return Ok(userProfileDto);
+        }
 
 
         [HttpPost("change-password")]
