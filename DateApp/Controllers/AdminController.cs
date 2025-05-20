@@ -66,10 +66,35 @@ namespace DateApp.Controllers
                 {
                     return NotFound("Kullanıcı bulunamadı.");
                 }
+
+                // İlişkili kayıtları sil
+                var userMessages = await _context.PrivateMessages
+                    .Where(m => m.SenderId == user.Id || m.ReceiverId == user.Id)
+                    .ToListAsync();
+                _context.PrivateMessages.RemoveRange(userMessages);
+
+                var userChatMessages = await _context.ChatMessages
+                    .Where(m => m.SenderUserId == user.Id)
+                    .ToListAsync();
+                _context.ChatMessages.RemoveRange(userChatMessages);
+
+                var userBlocks = await _context.UserBlocks
+                    .Where(b => b.BlockerId == user.Id || b.BlockedId == user.Id)
+                    .ToListAsync();
+                _context.UserBlocks.RemoveRange(userBlocks);
+
+                var userComplaints = await _context.ComplaintAndRequests
+                    .Where(c => c.UserId == user.Id)
+                    .ToListAsync();
+                _context.ComplaintAndRequests.RemoveRange(userComplaints);
+
+                await _context.SaveChangesAsync();
+
+                // Son olarak kullanıcıyı sil
                 var result = await _userManager.DeleteAsync(user);
                 if (result.Succeeded)
                 {
-                    return Ok(new {Message = $"{deleteUserDto.Username} kullanıcısı başarıyla silindi. "});
+                    return Ok(new { Message = $"{deleteUserDto.Username} kullanıcısı başarıyla silindi. " });
                 }
                 else
                 {
@@ -87,7 +112,7 @@ namespace DateApp.Controllers
         {
             try
             {
-                var roles = await _roleManager.Roles.Select(r => new {r.Name}).ToListAsync();
+                var roles = await _roleManager.Roles.Select(r => new { r.Name }).ToListAsync();
                 return Ok(roles);
             }
             catch (Exception ex)
@@ -113,7 +138,7 @@ namespace DateApp.Controllers
                 }
                 var role = new IdentityRole(roleDto.RoleName);
                 var result = await _roleManager.CreateAsync(role);
-                
+
                 if (result.Succeeded)
                 {
                     return Ok("Rol başarıyla oluşturuldu.");

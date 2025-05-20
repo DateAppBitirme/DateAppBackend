@@ -76,7 +76,7 @@ namespace DateApp.Data
                  .HasOne(cr => cr.User)
                  .WithMany()
                  .HasForeignKey(cr => cr.UserId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                 .OnDelete(DeleteBehavior.Cascade);
 
 
 
